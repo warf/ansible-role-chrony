@@ -1,0 +1,8 @@
+---
+- name: restart chrony
+  systemd:
+    name: chrony
+    state: restarted
+  tags: [ ntp, chrony ]
+
+...
