@@ -11,8 +11,8 @@
     dest: '/etc/chrony/{{ item.name }}'
     mode: '{{ item.mode }}'
   loop:
-    - {name: chrony.conf, mode: '0644' }
-    - {name: chrony.keys, mode: '0640' }
+    - { name: chrony.conf, mode: '0644' }
+    - { name: chrony.keys, mode: '0640' }
   notify: restart chrony
   tags: [ ntp, chrony ]
 
