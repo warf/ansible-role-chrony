@@ -18,7 +18,7 @@
 
 - name: enable ufw
   ufw:
-    name: 'NTP server port'
+    comment: 'NTP server port'
     rule: allow
     direction: in
     proto: udp
