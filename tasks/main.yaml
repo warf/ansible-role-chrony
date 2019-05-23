@@ -25,7 +25,7 @@
     port: 123
     src: '{{ item }}'
   when:
-    - enable_ufw
+    - enable_ufw | bool
     - ansible_fqdn in ntp_servers
   loop: '{{ lan_addr }}'
   tags: [ ntp, chrony ]
