@@ -22,7 +22,7 @@
     rule: allow
     direction: in
     proto: udp
-    port: 123
+    port: '123'
     src: '{{ item }}'
   when:
     - enable_ufw | bool
