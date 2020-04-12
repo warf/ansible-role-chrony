@@ -1,6 +1,6 @@
 ---
 - name: restart chrony
-  systemd:
+  service:
     name: chrony
     state: restarted
   tags: [ ntp, chrony ]
