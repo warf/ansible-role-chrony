@@ -54,7 +54,7 @@ makestep 1 3
 
 # for statistics (node_exporter)
 allow 127/8
-{% if ansible_fqdn in ntp_servers %}
+{% if ntp_server %}
 # for clients
 {% for net in lan_addr %}
 allow {{ net }}

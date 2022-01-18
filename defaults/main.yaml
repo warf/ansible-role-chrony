@@ -8,4 +8,5 @@ ntp_keys: []
 #  - {id: 2, hash: 'SHA1', content: '76ab5aafd778f849c511b929bba69ddd6ca9f02c' }
 ntp_key_refernce: 1
 
+ntp_server: false
 ...
