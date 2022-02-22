@@ -1,31 +1,23 @@
 # Welcome to the chrony configuration file. See chrony.conf(5) for more
-# information about usuable directives.
+# information about usable directives.
 
-# This will use (up to):
-# - 4 sources from ntp.ubuntu.com which some are ipv6 enabled
-# - 2 sources from 2.ubuntu.pool.ntp.org which is ipv6 enabled as well
-# - 1 source from [01].ubuntu.pool.ntp.org each (ipv4 only atm)
-# This means by default, up to 6 dual-stack and up to 2 additional IPv4-only
-# sources will be used.
-# At the same time it retains some protection against one of the entries being
-# down (compare to just using one of the lines). See (LP: #1754358) for the
-# discussion.
-#
-# About using servers from the NTP Pool Project in general see (LP: #104525).
-# Approved by Ubuntu Technical Board on 2011-02-08.
-# See http://www.pool.ntp.org/join.html for more information.
-
-{{ ansible_managed | comment }}
-
-{% if ntp_servers|length and ansible_fqdn not in ntp_servers  %}
-{% for server in ntp_servers %}
-server {{ server }} iburst {% if ntp_auth %}key {{ ntp_key_refernce }}{% endif %}
-
-{% endfor %}
+{% if chrony_subdir_supported %}
+# Include configuration files found in /etc/chrony/conf.d.
+confdir /etc/chrony/conf.d
 {% else %}
-pool {{ ntp_pool }} iburst maxsources 4
+{% include 'access.conf.j2' %}
+{% include 'other.conf.j2' %}
 {% endif %}
 
+{% if chrony_subdir_supported %}
+# Use time sources from DHCP.
+sourcedir /run/chrony-dhcp
+
+# Use NTP sources found in /etc/chrony/sources.d.
+sourcedir /etc/chrony/sources.d
+{% else %}
+{% include 'local-ntp-server.sources.j2' %}
+{% endif %}
 
 # This directive specify the location of the file containing ID/key pairs for
 # NTP authentication.
@@ -35,8 +27,13 @@ keyfile /etc/chrony/chrony.keys
 # information.
 driftfile /var/lib/chrony/chrony.drift
 
+{% if chrony_subdir_supported %}
+# Save NTS keys and cookies.
+ntsdumpdir /var/lib/chrony
+{% endif %}
+
 # Uncomment the following line to turn logging on.
-log tracking measurements statistics
+#log tracking measurements statistics
 
 # Log files location.
 logdir /var/log/chrony
@@ -45,20 +42,14 @@ logdir /var/log/chrony
 maxupdateskew 100.0
 
 # This directive enables kernel synchronisation (every 11 minutes) of the
-# real-time clock. Note that it can’t be used along with the 'rtcfile' directive.
+# real-time clock. Note that it can't be used along with the 'rtcfile' directive.
 rtcsync
 
 # Step the system clock instead of slewing it if the adjustment is larger than
 # one second, but only in the first three clock updates.
 makestep 1 3
 
-# for statistics (node_exporter)
-allow 127/8
-{% if ntp_server %}
-# for clients
-{% for net in lan_addr %}
-allow {{ net }}
-{% endfor %}
-{% endif %}
-
-leapsecmode slew
+# Get TAI-UTC offset and leap seconds from the system tz database.
+# This directive must be commented out when using time sources serving
+# leap-smeared time.
+leapsectz right/UTC

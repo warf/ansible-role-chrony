@@ -3,6 +3,15 @@
   service:
     name: chrony
     state: restarted
-  tags: [ ntp, chrony ]
+    enabled: true
+  tags:
+    - ntp
+    - chrony
+
+- name: chrony reload sources
+  command:
+    cmd: chronyc reload sources
+  tags:
+    - chrony
 
 ...

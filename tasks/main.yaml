@@ -1,11 +1,32 @@
 ---
+- name: Include OS-specific variables.
+  include_vars: "{{ lookup('first_found', possible_files) }}"
+  vars:
+    possible_files:
+      - "vars/{{ ansible_distribution }}.{{ ansible_distribution_release }}.yml"
+      # - "vars/{{ ansible_lsb.id }}.yml"
+      - "vars/{{ ansible_distribution }}.yml"
+      # - "vars/{{ ansible_os_family }}.yml"
+      - "vars/default.yml"
+
+- name: create config directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: 0755
+  loop:
+    - '/etc/chrony'
+    - '/etc/chrony/conf.d'
+    - '/etc/chrony/sources.d'
+
 - name: install pkg
-  apt:
+  package:
     name: 'chrony'
     state: present
-  tags: [ ntp, chrony ]
 
-- name: copy conf
+- name: copy chronyd conf
   template:
     src: '{{ item.name }}.j2'
     dest: '/etc/chrony/{{ item.name }}'
@@ -14,7 +35,25 @@
     - { name: chrony.conf, mode: '0644' }
     - { name: chrony.keys, mode: '0640' }
   notify: restart chrony
-  tags: [ ntp, chrony ]
+
+- name: copy other chrony config files
+  template:
+    src: '{{ item.name }}.j2'
+    dest: '/etc/chrony/{{ item.path }}/{{ item.name }}'
+    mode: '{{ item.mode }}'
+  loop:
+    - { name: access.conf, mode: '0644', path: 'conf.d' }
+    - { name: other.conf, mode: '0644', path: 'conf.d' }
+  notify: restart chrony
+
+- name: copy other chrony sources
+  template:
+    src: '{{ item.name }}.j2'
+    dest: '/etc/chrony/{{ item.path }}/{{ item.name }}'
+    mode: '{{ item.mode }}'
+  loop:
+    - { name: local-ntp-server.sources, mode: '0644', path: 'sources.d' }
+  notify: chrony reload sources
 
 - name: enable ufw
   ufw:
@@ -27,14 +66,12 @@
   when:
     - enable_ufw | bool
     - ansible_fqdn in ntp_servers
-  loop: '{{ lan_addr }}'
-  tags: [ ntp, chrony ]
+  loop: '{{ lan_networks }}'
 
 - name: enable&start service
   service:
     name: chrony
-    enabled: True
+    enabled: true
     state: started
-  tags: [ ntp, chrony ]
 
 ...

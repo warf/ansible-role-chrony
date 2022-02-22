@@ -1,0 +1,13 @@
+{{ ansible_managed | comment }}
+
+{% if ntp_servers|length and ansible_fqdn not in ntp_servers  %}
+{% for server in ntp_servers %}
+server {{ server }} iburst{% if ntp_auth %} key {{ ntp_key_reference }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if ntp_pools|length %}
+{% for pool in ntp_pools %}
+pool {{ pool.name }} iburst maxsources {{ pool.maxsources | default(4) }}
+{% endfor %}
+{% endif %}

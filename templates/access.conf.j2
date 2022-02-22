@@ -1,0 +1,9 @@
+# for statistics (node_exporter)
+allow 127/8
+{% if is_ntp_server %}
+# Allow NTP client access from local network.
+{% for net in lan_networks %}
+allow {{ net }}
+{% endfor %}
+{% endif %}
+
