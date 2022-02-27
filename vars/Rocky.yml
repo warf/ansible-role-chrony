@@ -1,2 +1,3 @@
 ---
 chrony_subdir_supported: false
+chrony_service_name: chronyd

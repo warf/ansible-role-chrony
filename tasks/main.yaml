@@ -46,6 +46,16 @@
     - { name: other.conf, mode: '0644', path: 'conf.d' }
   notify: restart chrony
 
+- name: use new config on RedHat/Rocky/CentOs
+  lineinfile:
+    path: '/etc/sysconfig/chronyd'
+    regexp: '^OPTIONS=""$'
+    line: 'OPTIONS="-f /etc/chrony/chrony.conf"'
+  when:
+    - ansible_distribution == "Rocky"
+    - ansible_distribution_major_version == 8
+  notify: restart chrony
+
 - name: copy other chrony sources
   template:
     src: '{{ item.name }}.j2'
@@ -70,7 +80,7 @@
 
 - name: enable&start service
   service:
-    name: chrony
+    name: '{{ chrony_service_name }}'
     enabled: true
     state: started
 
