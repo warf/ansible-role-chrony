@@ -18,6 +18,11 @@ sourcedir /etc/chrony/sources.d
 {% else %}
 {% include 'local-ntp-server.sources.j2' %}
 {% endif %}
+{% if is_ntp_server %}
+
+# Serve time even if not synchronized to a time source.
+local stratum 10
+{% endif %}
 
 # This directive specify the location of the file containing ID/key pairs for
 # NTP authentication.
